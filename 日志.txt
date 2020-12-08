@@ -1,0 +1,19 @@
+2020.12.8
+```markdown 
+1.设置表单功能
+a.创建表单类，继承自wtforms.Form类
+b.在表单类中定义表单的若干字段，并设置验证器validators；并自定义错误message信息
+c.使用表单类
+    *实例化表单类对象，传入request.form
+    *验证表单。form.validate()
+    *获取传入到后端的表单数据。form.字段名.data
+    *获取错误信息。from.字段名.errors 返回一个错误列表
+    *将错误信息显示在模版中
+        *if message....
+2.设置session
+a.设置session的key(session通过一个密钥对数据进行签名以加密数据)
+    *SECRET_KEY
+b.设置session中cookie的保存时间
+    *启动session 
+    *`app.config['PERMANENT_SESSION_LIFETIME']=timedelta(hours=2)`
+```
