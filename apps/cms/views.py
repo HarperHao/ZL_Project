@@ -10,13 +10,15 @@ from flask import Blueprint, views, render_template, request, redirect, url_for,
 from .forms import LoginForm
 from .models import CMSUser
 import config
+from .decorators import login_required
 
 bp = Blueprint("cms", __name__, url_prefix='/cms')
 
 
 @bp.route('/')
+@login_required
 def index():
-    return 'cms index'
+    return render_template('cms/cms_index.html')
 
 
 # 类视图函数
