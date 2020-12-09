@@ -1,19 +1,67 @@
 2020.12.8
 ```markdown 
+
 1.设置表单功能
-a.创建表单类，继承自wtforms.Form类
-b.在表单类中定义表单的若干字段，并设置验证器validators；并自定义错误message信息
-c.使用表单类
-    *实例化表单类对象，传入request.form
-    *验证表单。form.validate()
-    *获取传入到后端的表单数据。form.字段名.data
-    *获取错误信息。from.字段名.errors 返回一个错误列表
-    *将错误信息显示在模版中
-        *if message....
-2.设置session
-a.设置session的key(session通过一个密钥对数据进行签名以加密数据)
-    *SECRET_KEY
-b.设置session中cookie的保存时间
-    *启动session 
-    *`app.config['PERMANENT_SESSION_LIFETIME']=timedelta(hours=2)`
+    a.创建表单类，继承自wtforms.Form类
+    b.在表单类中定义表单的若干字段，并设置验证器validators；并自定义错误message信息
+    c.使用表单类
+        *实例化表单类对象，传入request.form
+        *验证表单。form.validate()
+        *获取传入到后端的表单数据。form.字段名.data
+        *获取错误信息。from.字段名.errors 返回一个错误列表
+        *将错误信息显示在模版中
+            *if message....
+
+2.设置session（remember me）
+    a.设置session的key(session通过一个密钥对数据进行签名以加密数据)
+        *SECRET_KEY
+    b.设置session中cookie的保存时间
+        *启动session 
+        *`app.config['PERMANENT_SESSION_LIFETIME']=timedelta(hours=2)`
+    c.优化session的key
+        *将key用一个常量来保存，这个常量储存在config.py中
+
+3.用户权限认证
+    *写一个login_required(func)函数，把它注册到index方法上面
+        *如果CMS_USER_ID在session里则返回函数
+        *否则重定向到登录页面
+
+4.后台模版渲染完成
+    *使用模版的宏
+        """
+        #_macros.html
+            {% macro 函数名(参数) %}
+                函数体
+            {% endmacro %}
+
+        #base.html
+            {from "_macros.html" import 函数名}
+        """
+
+```
+
+2020.12.9
+```markdown
+1.设置g对象,用于管理员的名字和之后的一系列处理
+    *使用@befor_request钩子函数设置g对象
+    *session里面有当前用户的user_id（当初设置的时候把user_id设置成key了），根据user_id找到用户
+    *将登录用户绑定到g对象的cms_user属性上去。
+2.实现登出功能
+    *首先要进行用户权限认证
+    *删除session
+    *重定向到登录页面
+
+3.实现各个页面的前端
+    *模板
+        *模板继承 {% extends 'base.html'%} 
+        *模板重写 {% block block.name %} {% endblock %}
+        *在一个bolock里面调用另一个block的内容 {{ self.block.name()}}
+        *在模板里面设置变量 {% set 变量名 = xxxx %}
+    *个人信息页面
+        *render_template('profile.html')
+    *修改密码页面
+    
+4.表单的CSRF保护
+    from flask_wtf.csrf import CSRFProtect
+    CSRFProtect(app)
 ```

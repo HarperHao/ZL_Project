@@ -6,22 +6,40 @@ FUNCTION:  后台
 12/8->表单验证、session使用
 """
 
-from flask import Blueprint, views, render_template, request, redirect, url_for, session
-from .forms import LoginForm
+from flask import Blueprint, views, render_template, request, redirect, url_for, session, g, jsonify
+from .forms import LoginForm, RestpwdForm
 from .models import CMSUser
+from exts import db
 import config
 from .decorators import login_required
 
 bp = Blueprint("cms", __name__, url_prefix='/cms')
 
 
+# 登录后的主页面
 @bp.route('/')
 @login_required
 def index():
     return render_template('cms/cms_index.html')
 
 
-# 类视图函数
+# 注销
+@bp.route('/logout/')
+@login_required
+def logout():
+    del session[config.CMS_USER_ID]
+    return redirect(url_for('cms.login'))
+
+
+# 个人信息视图
+@bp.route('/profile/')
+@login_required
+def profile():
+    print('个人信息视图')
+    return render_template('cms/cms_profile.html')
+
+
+# 登录类视图函数
 class LoginView(views.MethodView):
 
     def get(self, message=None):
@@ -55,3 +73,31 @@ class LoginView(views.MethodView):
 
 # as.view(给view_function起个名字) url_for('login')->/login/
 bp.add_url_rule('/login/', view_func=LoginView.as_view('login'))
+
+
+# 修改密码类视图函数
+class ResetPwdView(views.MethodView):
+    decorators = [login_required]
+
+    def get(self):
+        return render_template('cms/cms_resetpwd.html')
+
+    def post(self):
+        pass
+        # form = RestpwdForm(request.form)
+        # if form.validate():
+        #     user = g.cms_user
+        #     oldpwd = form.oldpwd.data
+        #     newpwd = form.newpwd.data
+        #     if user.check_password(oldpwd):
+        #         user.password = newpwd
+        #         db.session.commit()
+        #         return jsonify({"code": 200, "message": ""})
+        #     else:
+        #         return jsonify({"code": 400, "message": "旧密码错误！"})
+        # else:
+        #     message = form.get_error()
+        #     return jsonify({"code": 400, "message": message})
+
+
+bp.add_url_rule('/resetpwd/', view_func=ResetPwdView.as_view('resetpwd'))

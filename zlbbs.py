@@ -4,12 +4,11 @@ TIME    ： 2020/11/11
 FUNCTION:  
 """
 from flask import Flask
-
 import config
 from apps.cms import bp as cms_bp
 from apps.common import bp as common_bp
 from apps.front import bp as front_bp
-from exts import db
+from exts import db,csrf
 
 
 def create_app():
@@ -20,6 +19,7 @@ def create_app():
     app.register_blueprint(common_bp)
     app.register_blueprint(front_bp)
     db.init_app(app)
+    csrf.init_app(app)
     return app
 
 
