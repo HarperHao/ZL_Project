@@ -60,8 +60,47 @@
     *个人信息页面
         *render_template('profile.html')
     *修改密码页面
-    
+        *前端
+            *ajax
+        *后台功能
+            *表单post验证
+            *优化form类
 4.表单的CSRF保护
     from flask_wtf.csrf import CSRFProtect
     CSRFProtect(app)
+```
+
+2020.12.10
+```markdown
+1.复习巩固12.9的知识
+
+2.修复点击个人中心下拉菜单无法展开的bug
+
+3.json数据优化
+    *创建工具包
+    *使用jsonify()传输数据
+
+4.sweetalert框架
+    *导入css和js文件
+    *在resetpwd.js文件中编写js代码
+
+5.整理修改密码页面代码
+    *让页面显示出三个表单来（get）
+        *html a标签的href属性链接到对应的后端代码上，后端代码返回渲染好的html。
+        用bootstarp提供的表单模板去写这些表单。
+    *Ajax设置CSRF保护
+        *后端中设置CSRFProtect(app)
+        *html表单中的<meta>标签中设置一个CSRF令牌
+    *发送数据（post）
+        *后端接受数据
+            *表单验证，创建一个类
+            *获取数据，form.字段名.data
+        *验证数据
+            *验证发送上来的数据是否符合定义的表单验证器
+            *验证输入的原始密码是否正确
+                *利用g对象来获取当前用户，进而来判断密码正确与否
+        ＊根据验证的结果向前台发送规范的json数据
+            *将各种验证情况的方法封装好,使用jsonify()
+        *sweetalert
+            *前台根据返回回来的code弹出合适的sweetalert在js文件里面编写
 ```
