@@ -8,7 +8,7 @@ import config
 from apps.cms import bp as cms_bp
 from apps.common import bp as common_bp
 from apps.front import bp as front_bp
-from exts import db,csrf
+from exts import db, csrf
 
 
 def create_app():

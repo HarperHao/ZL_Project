@@ -12,6 +12,7 @@ from .models import CMSUser
 from exts import db
 import config
 from .decorators import login_required
+from utils import restful
 
 bp = Blueprint("cms", __name__, url_prefix='/cms')
 
@@ -83,21 +84,21 @@ class ResetPwdView(views.MethodView):
         return render_template('cms/cms_resetpwd.html')
 
     def post(self):
-        pass
-        # form = RestpwdForm(request.form)
-        # if form.validate():
-        #     user = g.cms_user
-        #     oldpwd = form.oldpwd.data
-        #     newpwd = form.newpwd.data
-        #     if user.check_password(oldpwd):
-        #         user.password = newpwd
-        #         db.session.commit()
-        #         return jsonify({"code": 200, "message": ""})
-        #     else:
-        #         return jsonify({"code": 400, "message": "旧密码错误！"})
-        # else:
-        #     message = form.get_error()
-        #     return jsonify({"code": 400, "message": message})
+
+        form = RestpwdForm(request.form)
+        if form.validate():
+            user = g.cms_user
+            oldpwd = form.oldpwd.data
+            newpwd = form.newpwd.data
+            if user.check_password(oldpwd):
+                user.password = newpwd
+                db.session.commit()
+                return restful.success()
+            else:
+                return restful.params_error(message='旧密码错误')
+        else:
+            message = form.get_error()
+            return restful.params_error(message=message)
 
 
 bp.add_url_rule('/resetpwd/', view_func=ResetPwdView.as_view('resetpwd'))
