@@ -8,7 +8,7 @@ import config
 from apps.cms import bp as cms_bp
 from apps.common import bp as common_bp
 from apps.front import bp as front_bp
-from exts import db, csrf
+from exts import db, csrf, mail
 
 
 def create_app():
@@ -20,6 +20,7 @@ def create_app():
     app.register_blueprint(front_bp)
     db.init_app(app)
     csrf.init_app(app)
+    mail.init_app(app)
     return app
 
 

@@ -6,10 +6,13 @@ FUNCTION:  后台
 12/8->表单验证、session使用
 """
 
-from flask import Blueprint, views, render_template, request, redirect, url_for, session, g, jsonify
+from flask import Blueprint, views, render_template, request, redirect, url_for, session, g
+from flask_mail import Message
+import string
+import random
 from .forms import LoginForm, RestpwdForm
 from .models import CMSUser
-from exts import db
+from exts import db, mail
 import config
 from .decorators import login_required
 from utils import restful
@@ -102,3 +105,39 @@ class ResetPwdView(views.MethodView):
 
 
 bp.add_url_rule('/resetpwd/', view_func=ResetPwdView.as_view('resetpwd'))
+
+
+# 修改邮箱视图类
+class ResetEmailView(views.MethodView):
+    decorators = [login_required]
+
+    def get(self):
+        return render_template('cms/cms_resetemail.html')
+
+    def post(self):
+        pass
+
+
+bp.add_url_rule('/resetemail/', view_func=ResetEmailView.as_view('resetemail'))
+
+
+# @bp.route('/email/')
+# @login_required
+# def sendEmail_test():
+#     message = Message(subject='这是一封测试邮件', recipients=['1310160680@qq.com', '1150475496@qq.com'], body='你好，这是一封测试邮件')
+#     mail.send(message)
+#     return 'success'
+
+@bp.route('/email_captcha/')
+@login_required
+def email_captcha():
+    # 从url中获取参数
+    email = request.args.get('email')
+    if not email:
+        return restful.params_error('请输入邮箱')
+
+    source = string.ascii_letters + string.digits
+    # temp是一个列表
+    temp = random.sample(source, 6)
+    captcha = ''.join(temp)
+    print('邮箱验证码为：'.format(captcha))

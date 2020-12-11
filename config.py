@@ -26,3 +26,17 @@ PERMANENT_SESSION_LIFETIME = timedelta(days=1)
 CMS_USER_ID = 'Hao'
 # 给session设置secret_key
 SECRET_KEY = 'Hao'
+
+# 配置邮件
+# 发信服务器
+MAIL_SERVER = "smtp.qq.com"
+MAIL_PORT = '587'
+MAIL_USE_TLS = True
+# MAIL_USE_SSL
+# 发信服务器的邮箱地址
+MAIL_USERNAME = "1310160680@qq.com"
+# 授权码
+MAIL_PASSWORD = "afvldorrfkwygjee"
+
+#默认的发信人
+MAIL_DEFAULT_SENDER = "1310160680@qq.com"

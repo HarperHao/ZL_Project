@@ -89,6 +89,7 @@
         *html a标签的href属性链接到对应的后端代码上，后端代码返回渲染好的html。
         用bootstarp提供的表单模板去写这些表单。
     *Ajax设置CSRF保护
+        *前台用jquery里的ajax()函数发送AJAX请求
         *后端中设置CSRFProtect(app)
         *html表单中的<meta>标签中设置一个CSRF令牌
     *发送数据（post）
@@ -103,4 +104,18 @@
             *将各种验证情况的方法封装好,使用jsonify()
         *sweetalert
             *前台根据返回回来的code弹出合适的sweetalert在js文件里面编写
+```
+
+2020.12.11
+```markdown
+1.修改邮箱页面
+    *前台显示
+    *后台设置
+        *flask_email
+            *qq邮箱开启SMTP服务器并获得授权码
+            *创建Mail()实例化对象
+            *写配置文件（配置文件参数有一些不是很清楚）
+            *创建Message(subjects=,recipients=[],body=)实例对象
+            *写一个测试接口，发送message, mail.send(message)
+        *编写了生成验证码的代码
 ```
