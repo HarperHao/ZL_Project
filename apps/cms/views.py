@@ -10,12 +10,12 @@ from flask import Blueprint, views, render_template, request, redirect, url_for,
 from flask_mail import Message
 import string
 import random
-from .forms import LoginForm, RestpwdForm
+from .forms import LoginForm, RestpwdForm, ResetEmailForm
 from .models import CMSUser
 from exts import db, mail
 import config
 from .decorators import login_required
-from utils import restful
+from utils import restful, zlcache
 
 bp = Blueprint("cms", __name__, url_prefix='/cms')
 
@@ -115,7 +115,17 @@ class ResetEmailView(views.MethodView):
         return render_template('cms/cms_resetemail.html')
 
     def post(self):
-        pass
+        print('进入post')
+        form = ResetEmailForm(request.form)
+        if form.validate():
+            print('邮箱验证成功')
+            email = form.email.data
+            g.cms_user.email = email
+            db.session.commit()
+            return restful.success()
+        else:
+            print('邮箱验证失败')
+            return restful.params_error(form.get_error())
 
 
 bp.add_url_rule('/resetemail/', view_func=ResetEmailView.as_view('resetemail'))
@@ -129,15 +139,24 @@ bp.add_url_rule('/resetemail/', view_func=ResetEmailView.as_view('resetemail'))
 #     return 'success'
 
 @bp.route('/email_captcha/')
-@login_required
 def email_captcha():
     # 从url中获取参数
     email = request.args.get('email')
     if not email:
         return restful.params_error('请输入邮箱')
-
-    source = string.ascii_letters + string.digits
+    # 生成验证码
+    source_letters = string.ascii_letters + string.digits
     # temp是一个列表
-    temp = random.sample(source, 6)
+    temp = random.sample(source_letters, 6)
     captcha = ''.join(temp)
-    print('邮箱验证码为：'.format(captcha))
+    # print(temp)
+    print('邮箱验证码为:{}'.format(''.join(temp)))
+
+    # 给邮箱发送邮件
+    message = Message(subject='Python论坛邮箱验证码', recipients=[email], body='您的验证码是：{}'.format(captcha))
+    try:
+        mail.send(message)
+    except:
+        return restful.server_error()
+    zlcache.set(email, captcha)
+    return restful.success()

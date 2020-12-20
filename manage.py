@@ -9,7 +9,10 @@ from zlbbs import create_app
 from exts import db
 from apps.cms import models as cms_models
 
-CMSuser = cms_models.CMSUser
+CMSUser = cms_models.CMSUser
+CMSRole = cms_models.CMSRole
+CMSPermission = cms_models.CMSPermission
+
 app = create_app()
 manager = Manager(app)
 Migrate(app, db)
@@ -24,15 +27,62 @@ def create_cms_user(username, password, email):
     user = CMSuser(username=username, password=password, email=email)
     db.session.add(user)
     db.session.commit()
-    #print(user.password)
+    # print(user.password)
     print('管理员用户添加成功\n')
-
 
 
 @manager.command
 def recreate():
     db.drop_all()
     db.create_all()
+
+
+@manager.command
+def create_role():
+    # 1. 访问者（可以修改个人信息）
+    visitor = CMSRole(name='访问者', desc='只能相关数据，不能修改。')
+    visitor.permissions = CMSPermission.VISITOR
+
+    # 2. 运营角色（修改个人个人信息，管理帖子，管理评论，管理前台用户）
+    operator = CMSRole(name='运营', desc='管理帖子，管理评论,管理前台用户。')
+    operator.permissions = CMSPermission.VISITOR | CMSPermission.POSTER | CMSPermission.CMSUSER | CMSPermission.COMMENTER | CMSPermission.FRONTUSER
+
+    # 3. 管理员（拥有绝大部分权限）
+    admin = CMSRole(name='管理员', desc='拥有本系统所有权限。')
+    admin.permissions = CMSPermission.VISITOR | CMSPermission.POSTER | CMSPermission.CMSUSER | CMSPermission.COMMENTER | CMSPermission.FRONTUSER | CMSPermission.BOARDER
+
+    # 4. 开发者
+    developer = CMSRole(name='开发者', desc='开发人员专用角色。')
+    developer.permissions = CMSPermission.ALL_PERMISSION
+
+    db.session.add_all([visitor, operator, admin, developer])
+    db.session.commit()
+
+
+# 给用户添加角色,都要进行是否找到的判断
+@manager.option('-e', '--email', dest='email')
+@manager.option('-n', '--roleName', dest='role_name')
+def add_user_to_role(email, role_name):
+    user = CMSUser.query.filter_by(email=email).first()
+    if user:
+        role = CMSRole.query.filter_by(name=role_name).first()
+        if role:
+            user.roles.append(role)
+            db.session.commit()
+            print('添加此用户成功!')
+        else:
+            print('输入的角色名有误！')
+    else:
+        print('无法找到此用户！')
+
+
+@manager.command
+def test_permission():
+    user = CMSUser.query.first()
+    if user.is_developer:
+        print('此用户是开发人员')
+    else:
+        print('此用户不是开发人员')
 
 
 if __name__ == '__main__':

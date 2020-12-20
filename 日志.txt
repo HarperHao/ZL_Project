@@ -1,4 +1,4 @@
-2020.12.8
+ 2020.12.8
 ```markdown 
 
 1.设置表单功能
@@ -16,7 +16,7 @@
     a.设置session的key(session通过一个密钥对数据进行签名以加密数据)
         *SECRET_KEY
     b.设置session中cookie的保存时间
-        *启动session 
+        *启动session                                                                                                                                                                             
         *`app.config['PERMANENT_SESSION_LIFETIME']=timedelta(hours=2)`
     c.优化session的key
         *将key用一个常量来保存，这个常量储存在config.py中
@@ -119,3 +119,102 @@
             *写一个测试接口，发送message, mail.send(message)
         *编写了生成验证码的代码
 ```
+
+2020.12.17
+```markdown 
+1.邮箱功能完善
+    *修改邮箱页面要用AJAX
+        *获取验证码时使用了AJAX
+        *点击提交按钮时也是用了AJAX
+        *知识点：发送AJAX时前端的JS代码怎么写。get和post
+    *点击“获取验证码”这个按钮发送验证码邮件
+        *flask_email,qq邮箱
+    *将验证码保存到memcached中
+        *初始化memcache对象 cache=memcache.client(['127.0.0.1:11211'])
+        *set方法
+        *get方法
+    *创建邮箱数据的表单验证器（未完成）
+        *自定义表单验证器，在表单类中def validate_字段名(self,field)，field是前端输入的数据，必须返回ValidationError()
+```
+
+2020.12.20
+```markdown
+1.完成邮箱功能
+    *写完了邮箱的表单验证器
+    *写完了提交按钮的AJAX请求
+
+2.出现问题:css代码样式不正确，jquery的那个下拉页单也打不开了。原因未知。后来刷新十几次打开后又正确了
+submit那里ajax提交的js代码中写的url结尾少写了个/,结果报错,这可能是与后端定义的路由名称不一样的原因,后端的视图函数结尾加了/.
+之后我将视图函数和JS代码结尾的/都去掉,结果正确.
+
+3.梳理修改邮箱功能整体逻辑
+    a.写出修改邮箱的页面
+        *修改主页面上的href链接到修改邮箱的html
+    b.发送验证码那一行
+        *点击获取验证码按钮发送一个AJAX请求，使用字符串参数的形式传递要修改的邮箱（get）
+        *后端生成6位验证码
+        *后端向此邮箱发送验证码，将是否成功发送邮件的情况以Json数据形式返回给前端,前端根据消息的不同显示不同的sweetalert
+        *后端将此邮箱和验证码保存到memcached中去
+    c.立即修改那一行
+        *点击立即修改按钮发送一个AJAX请求，post请求
+        *生成表单验证器，验证输入的数据是否有误.ps：输入的是新的邮箱号码
+        *如果验证成功的话，就将修改的数据commit到数据库中去
+        *验证失败的话就显示错误信息
+
+4.梳理修改邮箱功能使用的技术
+    a.AJAX:
+    AJAX请求是局部的改变页面,AJAX可以使用JQuery这个库来发送.目前用到的只是get和post来发送请求,
+    参数有url,data,success(回调函数),fail(回调函数)
+    get下data发送的数据默认是以查询字符串的形式来发送.
+    post请求的话还需要在html那个button按钮外面把form的method设置成post
+    要设置CSRF保护
+        *后端中设置CSRFProtect(app)
+        *html表单中的<meta>标签中设置一个CSRF令牌
+    后端返回的消息,如果返回的是2xx的code则进入到了success回调函数中去,success函数中的data参数即后端返回的消息
+        
+        zlajax.post({
+            'url': '/cms/resertemail',
+            'data': {
+                'email': email,
+                'captcha': captcha
+            },
+            'success': function (data) {
+                if (data['code'] == 200) {
+                    emailE.val("");
+                    captcha.val("");
+                    zlalert.alertSuccessToast('恭喜！邮箱修改成功')
+                } else {
+                    zlalert.alertInfo(data['message'])
+                }
+            },
+            'fail': function (error) {
+                zlalert.alertNetworkError();
+            }
+        });
+
+    b.生成验证码:
+    string库和random库
+    # 生成验证码
+    source_letters = string.ascii_letters + string.digits
+    # temp是一个列表
+    temp = random.sample(source_letters, 6)
+    captcha = ''.join(temp)
+
+    c.发送邮件:
+    flask_mail
+    *qq邮箱开启SMTP服务器并获得授权码
+    *创建Mail()实例化对象
+    *写配置文件
+    *创建Message(subjects=,recipients=[],body=)实例对象
+    *发送message, mail.send(message)
+
+    d.将数据存储到memcached中去
+    *初始化memcache对象 cache=memcache.client(['127.0.0.1:11211'])
+        *set方法 cache.set(key,value,timeout)
+        *get方法 cache.get(key)
+
+5.角色和权限模型
+    
+```
+
+ 
