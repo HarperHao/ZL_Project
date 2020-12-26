@@ -33,8 +33,8 @@ class CMSUser(db.Model):
 
     @property
     def password(self):
-        raise AttributeError('password 是不可读属性')
-        # return self._password
+        # raise AttributeError('password 是不可读属性')
+        return self._password
 
     @password.setter
     def password(self, raw_password):
@@ -57,7 +57,7 @@ class CMSUser(db.Model):
 
     # 判断用户是否拥有某一权限
     def has_permission(self, permission):
-        return permission & self.permissions
+        return permission & self.permissions == permission
 
     # 判断用户是否为开发人员
     @property
